@@ -58,9 +58,7 @@ struct
   type conn = M.NETIF.t
 
   let get_stats _t =
-    { Mirage_net.rx_pkts = 0l; rx_bytes = 0L;
-      tx_pkts = 0l; tx_bytes = 0L;
-    }
+    Mirage_net.Stats.create ()
 
   let reset_stats _t = ()
 end
