@@ -60,7 +60,8 @@ module Rx = struct
     | Some b -> Cstruct.length b
 
   let remove_all t =
-    Lwt_dllist.clear t.q
+    Lwt_dllist.clear t.q;
+    t.cur_size <- 0l
 
   let add_r t s =
     if t.cur_size > t.max_size then
@@ -314,6 +315,7 @@ module Tx = struct
 
   let reset t =
     Lwt_dllist.clear t.buffer;
+    t.bufbytes <- 0l;
     inform_app t
 
 end
