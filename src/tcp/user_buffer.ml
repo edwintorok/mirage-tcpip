@@ -19,6 +19,9 @@ open Lwt.Infix
 
 module Lwt_dllist = Tcpip.Memory.Lwt_dllist
 
+let src = Logs.Src.create "tcp.user_buffer" ~doc:"Mirage TCP User_buffer module"
+module Log = (val Logs.src_log src : Logs.LOG)
+
 let lwt_sequence_add_l s seq =
   let (_:'a Lwt_dllist.node) = Lwt_dllist.add_l s seq in
   ()
@@ -71,8 +74,16 @@ module Rx = struct
     remove_all t;
     t.watcher <- None
 
+  let max_size t =
+    let free = Mirage_net.Memory.Limit.free () in
+    if free < Int32.to_int t.max_size then (
+      let limited = Int32.of_int free in
+      Log.debug (fun f -> f "memory pressure: limiting max_size %ld -> %ld" t.max_size limited);
+      limited
+    ) else t.max_size
+
   let add_r t s =
-    if t.cur_size > t.max_size then
+    if t.cur_size > max_size t then
       let th,u = Lwt.wait () in
       let node = Lwt_dllist.add_r u t.writers in
       Lwt.on_cancel th (fun _ -> Lwt_dllist.remove t.writers node);
@@ -100,7 +111,7 @@ module Rx = struct
       let s = Lwt_dllist.take_l t.q in
       t.cur_size <- Int32.(sub t.cur_size (of_int (seglen s)));
       notify_size_watcher t >>= fun () ->
-      if t.cur_size < t.max_size then begin
+      if t.cur_size < max_size t then begin
         match Lwt_dllist.take_opt_l t.writers with
         |None -> ()
         |Some w -> Lwt.wakeup w ()
