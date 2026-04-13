@@ -3,7 +3,8 @@ open Lwt.Infix
 type ipaddr = Ipaddr.V4.t
 
 type t = {
-  mutable listening_sockets : Lwt_unix.file_descr list
+  mutable listening_sockets : Lwt_unix.file_descr list;
+  mutable fd: Lwt_unix.file_descr option
 }
 
 type error = [ `Ip of string ]
@@ -21,8 +22,16 @@ let safe_close fd =
       | Unix.Unix_error (Unix.EBADF, _, _) -> Lwt.return_unit
       | e -> Lwt.fail e)
 
-let connect () = Lwt.return { listening_sockets = [] }
-let disconnect t = Lwt_list.iter_p safe_close t.listening_sockets
+let connect () =
+  Lwt.return { listening_sockets = []; fd = None }
+
+let disconnect t =
+  let sockets =
+    match t.fd with
+    | None -> t.listening_sockets
+    | Some fd -> fd :: t.listening_sockets
+  in
+  Lwt_list.iter_p safe_close sockets
 
 let pp_sockaddr fmt sa =
   let open Lwt_unix in
@@ -51,19 +60,27 @@ let recvfrom' fd buf flags =
     Lwt.return (n, sockaddr)
   end else Lwt_cstruct.recvfrom fd buf flags
 
-let write _t ?src:_ ~dst ?ttl:_ttl buf =
+let write t ?src:_ ~dst  =
   let open Lwt_unix in
   let flags = [] in
-  let ipproto_icmp = 1 in (* according to BSD /etc/protocols *)
   let port = 0 in (* port isn't meaningful in this context *)
-  let fd = socket PF_INET SOCK_RAW ipproto_icmp in
   let in_addr = Unix.inet_addr_of_string (Ipaddr.V4.to_string dst) in
   let sockaddr = ADDR_INET (in_addr, port) in
+  let fd =
+    match t.fd  with
+    | None ->
+      let ipproto_icmp = 1 in (* according to BSD /etc/protocols *)
+      let fd = Lwt_unix.socket PF_INET SOCK_RAW ipproto_icmp in
+      t.fd <- Some fd;
+      fd
+    | Some fd -> fd
+  in
+  fun ?ttl:_ttl buf ->
   Lwt.catch (fun () ->
     sendto' fd buf flags sockaddr >>= fun sent ->
       if (sent <> (Cstruct.length buf)) then
         Log.debug (fun f -> f "short write: %d received vs %d expected" sent (Cstruct.length buf));
-    Lwt_unix.close fd |> Lwt_result.ok
+    Lwt_result.return ()
   ) (fun exn -> Lwt.return @@ Error (`Ip (Printexc.to_string exn)))
 
 let input t ~src ~dst:_ buf =
