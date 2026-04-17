@@ -41,10 +41,7 @@ let peek_l seq =
     let _ = Lwt_dllist.add_l s seq in
     s
 
-let rec reset_seq segs =
-  match Lwt_dllist.take_opt_l segs with
-  | None -> ()
-  | Some _ -> reset_seq segs
+let reset_seq = Lwt_dllist.clear
 
 (* The receive queue stores out-of-order segments, and can
    coalesece them on input and pass on an ordered list up the
