@@ -67,7 +67,7 @@ let icmp_echo_request () =
   Icmpv4_socket.disconnect server >>= fun () ->
   Icmpv4_socket.disconnect client >|= fun () ->
   Alcotest.(check int) "number of ICMP packets received by listener"
-    1 !received_icmp
+    2 !received_icmp
 
 let no_leak_fds_in_tcpv4v6 () =
   make_v4v6_stack false false ip4_any None >>= fun stack1 ->

@@ -118,7 +118,121 @@ let collect () =
   let (_ : int) = Gc.major_slice collectable in
   collectable
 
-let should_drop ~addr_to_octets:_ ~src:_ ~dst:_ ~proto:_ ~ts:_ =
+(*let should_drop ~addr_to_octets:_ ~src:_ ~dst:_ ~proto:_ ~ts:_ =
   let open Mirage_net in
   (* for now decide based just on memory pressure *)
-  Mem.(free_bytes region <= 0)
+  Mem.(free_bytes region <= 0)*)
+
+module Track = struct
+  open Gc.Memprof
+
+  let custom_words = Atomic.make 0
+  let other_words = Atomic.make 0
+  let total_words = Atomic.make 0
+
+  let last_total_words = Atomic.make 0
+
+  let update t delta=
+    if delta <> 0 then
+    let (_ : int) = Atomic.fetch_and_add t delta in
+    ()
+
+  let delta sample last =
+    let current = Atomic.get sample in
+    let prev = Atomic.exchange last current in
+    current - prev
+
+  let max_words = Atomic.make 8192000
+  (* TODO: propagate and set *)
+
+  let packets = Atomic.make 0
+  let drop_modulo = Atomic.make max_int
+  
+  let should_drop () =
+    Atomic.set max_words (Mirage_net.Mem.heap.limit_bytes / 8);
+
+    let index = Atomic.fetch_and_add packets 1 + 1 in
+    if index mod 64 = 0 || index mod Atomic.get drop_modulo = 0 then (
+      let allocation_rate = delta total_words last_total_words in
+      if allocation_rate < 0 then
+        Printf.eprintf "allocation rate: %d\n" allocation_rate;
+      if allocation_rate <= 0 then (
+        Atomic.set drop_modulo max_int;
+      )
+      else
+        (* we are allocating faster than we are deallocating, if this keeps up,
+          we'll eventually run out of memory
+        *)
+        (let free_words = (Atomic.get max_words - Atomic.get total_words) / 2 in
+        Atomic.set drop_modulo
+          (if allocation_rate >= free_words then 1
+          else (free_words / allocation_rate));
+        Printf.eprintf "allocation_rate: %d, free_words: %d, %d mod %d, %d, %d, %d\n"
+          allocation_rate free_words index (free_words / allocation_rate)
+          (Atomic.get max_words - Gc.(quick_stat ()).heap_words)
+          Mirage_net.Mem.region.bytes (Atomic.get drop_modulo)
+          ;
+        flush stderr;
+        Gc.major_slice (max allocation_rate ~-free_words)|> ignore)
+    );
+    if index mod Atomic.get drop_modulo = 0 then begin
+       Atomic.set packets 0;
+       true
+    end else
+      false
+
+  let sampling_rate_words = 10_000
+
+  let update_info source words n_samples =
+    (* we don't sample all allocations, so we know there were more,
+       but we don't know what kind.
+       Only track this for the major heap, because for the minor heap we don't track all deallocations
+    *)
+    update total_words (n_samples * sampling_rate_words);
+    match source with
+    | Custom -> update custom_words words
+    | _ -> update other_words words
+
+  let alloc info =
+    update_info info.source info.size info.n_samples;
+    Some info
+
+  let alloc_minor info =
+    (* only track Custom allocations here, because they use memory from the C heap *)
+    if info.source = Custom then alloc info
+    else None
+
+  let alloc_major = alloc
+
+  let dealloc info =
+    update_info info.source (-info.size) (-info.n_samples)
+
+  let dealloc_minor = dealloc
+
+  let dealloc_major = dealloc
+
+  let promote info =
+    Some info
+
+  let tracker =
+    { alloc_minor
+    ; alloc_major
+    ; promote
+    ; dealloc_minor
+    ; dealloc_major
+    }
+
+  let start () =
+    Gc.Memprof.start ~sampling_rate:(1. /. float_of_int sampling_rate_words) ~callstack_size:0 tracker
+
+  let stop t =
+    Gc.Memprof.stop ();
+    Gc.Memprof.discard t
+
+end
+
+let should_drop ~addr_to_octets:_ ~src:_ ~dst:_ ~proto:_ ~ts:_ =
+  Track.should_drop ()
+
+let _ =
+  Track.start ()

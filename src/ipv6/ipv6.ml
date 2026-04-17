@@ -136,10 +136,10 @@ module Make (N : Mirage_net.S)
     Cstruct.set_uint8 ph 39 (Ipv6_wire.protocol_to_int proto);
     ph
 
-  let connect ?(no_init = false) ?(handle_ra = true) ?cidr ?gateway netif ethif =
+  let connect ?cache_size ?(no_init = false) ?(handle_ra = true) ?cidr ?gateway netif ethif =
     Log.info (fun f -> f "IP6: Starting");
     let now = Mirage_mtime.elapsed_ns () in
-    let ctx, outs = Ndpv6.local ~handle_ra ~now (E.mac ethif) in
+    let ctx, outs = Ndpv6.local ?cache_size ~handle_ra ~now (E.mac ethif) in
     let ctx, outs = match cidr with
       | None -> ctx, outs
       | Some p ->

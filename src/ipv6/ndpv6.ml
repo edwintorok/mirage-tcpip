@@ -480,10 +480,20 @@ module NeighborCache = struct
     { state : state;
       is_router : bool }
 
-  module IpMap = Map.Make (Ipaddr)
+  module Info = struct
+    type t = info
+    let weight _ = 1
+  end
 
-  type t =
-    info IpMap.t
+  module IpMap = struct
+    include Lru.F.Make(Ipaddr)(Info)
+
+    let add k v t =
+      let t = add k v t in
+      trim t
+  end
+
+  type t = IpMap.t
 
   let empty =
     IpMap.empty
@@ -524,13 +534,13 @@ module NeighborCache = struct
     IpMap.fold
       (fun ip nb (nc, acts) ->
         let nc, acts' = tick_one ~now ~retrans_timer ip nb nc in
-        nc, acts' @ acts) nc (nc, [])
+        nc, acts' @ acts) (nc, []) nc
 
   let handle_ns nc ~src new_mac =
     let nb =
-      if IpMap.mem src nc then
-        IpMap.find src nc
-      else
+      match IpMap.find src nc with
+      | Some e -> e
+      | None ->
         {state = STALE new_mac; is_router = false}
     in
     let nb, acts =
@@ -547,11 +557,10 @@ module NeighborCache = struct
   let handle_ra nc ~src new_mac =
     Log.debug (fun f -> f "ND6: Processing SLLA option in RA");
     let nb =
-      try
-        let nb = IpMap.find src nc in
+      match IpMap.find src nc with
+      | Some nb ->
         {nb with is_router = true}
-      with
-      | Not_found ->
+      | None ->
         {state = STALE new_mac; is_router = true}
     in
     match nb.state with
@@ -615,17 +624,17 @@ module NeighborCache = struct
       | _ ->
         nc, []
     in
-    try
-      let nb = IpMap.find tgt nc in
+    match IpMap.find tgt nc with
+    | Some nb ->
       update nb
-    with
-    | Not_found ->
+    | None ->
       nc, []
 
   let query nc ~now ~retrans_timer ip =
-    try
-      let nb = IpMap.find ip nc in
-      match nb.state with
+    match IpMap.find ip nc with
+    | Some nb->
+      let nc = IpMap.promote ip nc in
+      (match nb.state with
       | INCOMPLETE _ ->
         nc, None, []
       | REACHABLE (_, dmac) | DELAY (_, dmac) | PROBE (_, _, dmac) ->
@@ -633,22 +642,20 @@ module NeighborCache = struct
       | STALE dmac ->
         let dt = Defaults.delay_first_probe_time in
         let nc = IpMap.add ip {nb with state = DELAY (Int64.add now dt, dmac)} nc in
-        nc, Some dmac, []
-    with
-    | Not_found ->
+        nc, Some dmac, [])
+    | None ->
       let nb  = {state = INCOMPLETE (Int64.add now retrans_timer, 0); is_router = false} in
       let nc  = IpMap.add ip nb nc in
       let dst = Ipaddr.Prefix.network_address solicited_node_prefix ip in
       nc, None, [SendNS (`Specified, dst, ip)]
 
   let reachable nc ip =
-    try
-      let nb = IpMap.find ip nc in
-      match nb.state with
+    match IpMap.find ip nc with
+    | Some nb ->
+      (match nb.state with
       | INCOMPLETE _ -> false
-      | _ -> true
-    with
-    | Not_found -> false
+      | _ -> true)
+    | None -> false
 end
 
 module RouterList = struct
@@ -1122,9 +1129,9 @@ let send ~now ctx ?src dst proto size fillf =
   let siz, fill = Allocate.hdr ~hlim:ctx.cur_hop_limit ~src ~dst ~proto ~size fillf in
   send' ~now ctx dst siz fill
 
-let local ~handle_ra ~now mac =
+let local ?(cache_size = 1024) ~handle_ra ~now mac =
   let ctx =
-    { neighbor_cache = NeighborCache.empty;
+    { neighbor_cache = NeighborCache.empty cache_size;
       prefix_list = PrefixList.link_local;
       router_list = RouterList.empty;
       mac = mac;

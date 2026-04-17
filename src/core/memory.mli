@@ -175,3 +175,9 @@ val collect : unit -> int
     Memory pressure, or QoS can be used to decide.
 *)
 val should_drop: addr_to_octets:('a -> string) -> src:'a -> dst:'a -> proto:int -> ts:int64 -> bool
+
+module Track: sig
+    val start: unit -> Gc.Memprof.t
+    val stop: Gc.Memprof.t -> unit
+    val should_drop : unit -> bool
+end
