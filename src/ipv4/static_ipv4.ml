@@ -46,7 +46,11 @@ module Make (Ethernet: Ethernet.S) (Arpv4 : Arp.S) = struct
   }
 
   let write t ?(fragment = true) ?(ttl = 38) ?src dst proto ?(size = 0) headerf bufs =
-    Routing.destination_mac t.cidr t.gateway t.arp dst >>= function
+    let delta = Cstruct.lenv bufs in
+    (* Although underlying Netif.write may be pure, the ARP lookup here isn't,
+        so update memory usage *)
+    Mirage_net.Memory.track ~delta
+    (Routing.destination_mac t.cidr t.gateway t.arp dst >>= function
     | Error `Local ->
       Log.warn (fun f -> f "Could not find %a on the local network" Ipaddr.V4.pp dst);
       Lwt.return @@ Error (`No_route "no response for IP on local network")
@@ -128,7 +132,7 @@ module Make (Ethernet: Ethernet.S) (Arpv4 : Arp.S) = struct
                 | Ok () ->
                   let l = Cstruct.length p in
                   writeout l (fun buf -> Cstruct.blit p 0 buf 0 l ; l))
-              (Ok ()) remaining
+              (Ok ()) remaining)
 
   let input t ~tcp ~udp ~default buf =
     match Ipv4_packet.Unmarshal.of_cstruct buf with
@@ -151,7 +155,7 @@ module Make (Ethernet: Ethernet.S) (Arpv4 : Arp.S) = struct
       end else
         let ts = Mirage_mtime.elapsed_ns () in
         let cache, res = Fragments.process t.cache ts packet payload in
-        t.cache <- cache ;
+        t.cache <- Tcpip.Memory.update_lru (module Fragments.Cache) ~old:t.cache cache;
         match res with
         | None -> Lwt.return_unit
         | Some (packet, payload) ->
