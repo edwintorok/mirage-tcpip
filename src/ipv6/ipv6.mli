@@ -18,6 +18,7 @@ module Make (N : Mirage_net.S)
             (E : Ethernet.S) : sig
   include Tcpip.Ip.S with type ipaddr = Ipaddr.V6.t and type prefix = Ipaddr.V6.Prefix.t
   val connect :
+    ?cache_size:int ->
     ?no_init:bool ->
     ?handle_ra:bool ->
     ?cidr:Ipaddr.V6.Prefix.t ->

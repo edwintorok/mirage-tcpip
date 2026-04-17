@@ -1,0 +1,637 @@
+opam-version: "2.0"
+synopsis: "opam-monorepo generated lockfile"
+maintainer: "opam-monorepo"
+depends: [
+  "angstrom" {= "0.16.1"}
+  "arp" {= "4.1.0" & ?vendor}
+  "astring" {= "0.8.5+dune"}
+  "base-bigarray" {= "base"}
+  "base-bytes" {= "base+dune" & ?vendor}
+  "base-domains" {= "base"}
+  "base-effects" {= "base"}
+  "base-nnp" {= "base"}
+  "base-threads" {= "base"}
+  "base-unix" {= "base"}
+  "base64" {= "3.5.2"}
+  "bigstringaf" {= "0.10.0"}
+  "bos" {= "0.2.1+dune"}
+  "charrua" {= "3.1.1" & ?vendor}
+  "charrua-client" {= "3.1.1" & ?vendor}
+  "cmdliner" {= "2.1.0+dune" & ?vendor}
+  "cmdliner-stdlib" {= "1.0.1" & ?vendor}
+  "conf-pkg-config" {= "4"}
+  "cppo" {= "1.8.0" & ?vendor}
+  "csexp" {= "1.5.2" & ?vendor}
+  "cstruct" {= "6.2.0" & ?vendor}
+  "cstruct-lwt" {= "6.2.0" & ?vendor}
+  "digestif" {= "1.3.0" & ?vendor}
+  "domain-name" {= "0.5.0" & ?vendor}
+  "dune" {= "3.22.2"}
+  "dune-configurator" {= "3.22.2" & ?vendor}
+  "duration" {= "0.3.0" & ?vendor}
+  "emile" {= "1.1"}
+  "eqaf" {= "0.10" & ?vendor}
+  "ethernet" {= "3.2.0" & ?vendor}
+  "fmt" {= "0.11.0+dune" & ?vendor}
+  "fpath" {= "0.7.3+dune"}
+  "ipaddr" {= "5.6.2" & ?vendor}
+  "ipaddr-cstruct" {= "5.6.2" & ?vendor}
+  "logs" {= "0.10.0+dune" & ?vendor}
+  "lru" {= "0.3.1" & ?vendor}
+  "lwt" {= "6.1.1" & ?vendor}
+  "lwt-dllist" {= "1.1.0" & ?vendor}
+  "macaddr" {= "5.6.2" & ?vendor}
+  "macaddr-cstruct" {= "5.6.2" & ?vendor}
+  "metrics" {= "0.5.0" & ?vendor}
+  "mirage" {= "4.10.5"}
+  "mirage-bootvar" {= "1.0.1" & ?vendor}
+  "mirage-crypto" {= "2.1.0" & ?vendor}
+  "mirage-crypto-rng" {= "2.1.0" & ?vendor}
+  "mirage-crypto-rng-mirage" {= "2.1.0" & ?vendor}
+  "mirage-flow" {= "5.0.0" & ?vendor}
+  "mirage-logs" {= "3.0.0" & ?vendor}
+  "mirage-mtime" {= "5.2.0" & ?vendor}
+  "mirage-net" {= "4.0.0" & ?vendor}
+  "mirage-net-unix" {= "3.0.0" & ?vendor}
+  "mirage-ptime" {= "5.2.0" & ?vendor}
+  "mirage-runtime" {= "4.10.5" & ?vendor}
+  "mirage-sleep" {= "4.1.0" & ?vendor}
+  "mirage-unix" {= "5.0.1" & ?vendor}
+  "mtime" {= "2.1.0+dune" & ?vendor}
+  "ocaml" {= "5.4.1"}
+  "ocaml-base-compiler" {= "5.4.1"}
+  "ocaml-compiler" {= "5.4.1"}
+  "ocaml-config" {= "3"}
+  "ocaml-options-vanilla" {= "1"}
+  "ocaml-syntax-shims" {= "1.0.0"}
+  "ocamlbuild" {= "0.16.1"}
+  "ocamlfind" {= "1.9.8"}
+  "ocplib-endian" {= "1.2" & ?vendor}
+  "ohex" {= "0.2.0" & ?vendor}
+  "opam-monorepo" {= "0.4.3"}
+  "pecu" {= "0.7"}
+  "psq" {= "0.2.1" & ?vendor}
+  "ptime" {= "1.2.0+dune" & ?vendor}
+  "randomconv" {= "0.2.0" & ?vendor}
+  "result" {= "1.5"}
+  "rresult" {= "0.7.0+dune"}
+  "seq" {= "base+dune" & ?vendor}
+  "stringext" {= "1.6.0"}
+  "tcpip" {= "9.0.1" & ?vendor}
+  "topkg" {= "1.1.1"}
+  "tuntap" {= "2.0.1" & ?vendor}
+  "uri" {= "4.4.0"}
+  "uutf" {= "1.0.4"}
+]
+depexts: [
+  ["linux-headers"] {os-distribution = "alpine"}
+  ["pkg-config"] {os-distribution = "nixos"}
+  ["pkg-config"] {os-family = "debian" | os-family = "ubuntu"}
+  ["pkgconf"] {os = "freebsd"}
+  ["pkgconf"] {os-distribution = "alpine"}
+  ["pkgconf"] {os-distribution = "arch"}
+  ["pkgconf"] {os-distribution = "cygwin"}
+  ["pkgconf"] {os = "macos" & os-distribution = "homebrew"}
+  ["pkgconf-pkg-config"] {os-distribution = "mageia"}
+  ["pkgconf-pkg-config"] {os-family = "fedora"}
+  ["pkgconf-pkg-config"] {os-distribution = "centos" & os-version >= "8"}
+  ["pkgconf-pkg-config"] {os-distribution = "ol" & os-version >= "8"}
+  ["pkgconf-pkg-config"] {os-distribution = "rhel" & os-version >= "8"}
+  ["pkgconfig"] {os = "macos" & os-distribution = "macports"}
+  ["pkgconfig"] {os-distribution = "centos" & os-version <= "7"}
+  ["pkgconfig"] {os-distribution = "ol" & os-version <= "7"}
+  ["pkgconfig"] {os-distribution = "rhel" & os-version <= "7"}
+  ["system:pkgconf"] {os = "win32" & os-distribution = "cygwinports"}
+]
+pin-depends: [
+  [
+    "arp.4.1.0"
+    "https://github.com/mirage/arp/releases/download/v4.1.0/arp-4.1.0.tbz"
+  ]
+  [
+    "base-bytes.base+dune"
+    "https://github.com/kit-ty-kate/bytes/archive/v0.1.0.tar.gz"
+  ]
+  [
+    "charrua.3.1.1"
+    "https://github.com/mirage/charrua/releases/download/v3.1.1/charrua-3.1.1.tbz"
+  ]
+  [
+    "charrua-client.3.1.1"
+    "https://github.com/mirage/charrua/releases/download/v3.1.1/charrua-3.1.1.tbz"
+  ]
+  [
+    "cmdliner.2.1.0+dune"
+    "https://github.com/dune-universe/cmdliner/releases/download/v2.1.0%2Bdune/cmdliner-2.1.0.dune.tbz"
+  ]
+  [
+    "cmdliner-stdlib.1.0.1"
+    "https://github.com/mirage/cmdliner-stdlib/releases/download/1.0.1/cmdliner-stdlib-1.0.1.tbz"
+  ]
+  [
+    "cppo.1.8.0"
+    "https://github.com/ocaml-community/cppo/archive/v1.8.0.tar.gz"
+  ]
+  [
+    "csexp.1.5.2"
+    "https://github.com/ocaml-dune/csexp/releases/download/1.5.2/csexp-1.5.2.tbz"
+  ]
+  [
+    "cstruct.6.2.0"
+    "https://github.com/mirage/ocaml-cstruct/releases/download/v6.2.0/cstruct-6.2.0.tbz"
+  ]
+  [
+    "cstruct-lwt.6.2.0"
+    "https://github.com/mirage/ocaml-cstruct/releases/download/v6.2.0/cstruct-6.2.0.tbz"
+  ]
+  [
+    "digestif.1.3.0"
+    "https://github.com/mirage/digestif/releases/download/v1.3.0/digestif-1.3.0.tbz"
+  ]
+  [
+    "domain-name.0.5.0"
+    "https://github.com/hannesm/domain-name/releases/download/v0.5.0/domain-name-0.5.0.tbz"
+  ]
+  [
+    "dune-configurator.3.22.2"
+    "https://github.com/ocaml/dune/releases/download/3.22.2/dune-3.22.2.tbz"
+  ]
+  [
+    "duration.0.3.0"
+    "https://github.com/hannesm/duration/releases/download/v0.3.0/duration-0.3.0.tbz"
+  ]
+  [
+    "eqaf.0.10"
+    "https://github.com/mirage/eqaf/releases/download/v0.10/eqaf-0.10.tbz"
+  ]
+  [
+    "ethernet.3.2.0"
+    "https://github.com/mirage/ethernet/releases/download/v3.2.0/ethernet-3.2.0.tbz"
+  ]
+  [
+    "fmt.0.11.0+dune"
+    "https://github.com/dune-universe/fmt/releases/download/v0.11.0%2Bdune/fmt-0.11.0.dune.tbz"
+  ]
+  [
+    "ipaddr.5.6.2"
+    "https://github.com/mirage/ocaml-ipaddr/releases/download/v5.6.2/ipaddr-5.6.2.tbz"
+  ]
+  [
+    "ipaddr-cstruct.5.6.2"
+    "https://github.com/mirage/ocaml-ipaddr/releases/download/v5.6.2/ipaddr-5.6.2.tbz"
+  ]
+  [
+    "logs.0.10.0+dune"
+    "https://github.com/dune-universe/logs/releases/download/v0.10.0%2Bdune/logs-0.10.0.dune.tbz"
+  ]
+  [
+    "lru.0.3.1"
+    "https://github.com/pqwy/lru/releases/download/v0.3.1/lru-0.3.1.tbz"
+  ]
+  [
+    "lwt.6.1.1"
+    "https://github.com/ocsigen/lwt/archive/refs/tags/6.1.1.tar.gz"
+  ]
+  [
+    "lwt-dllist.1.1.0"
+    "https://github.com/mirage/lwt-dllist/releases/download/v1.1.0/lwt-dllist-1.1.0.tbz"
+  ]
+  [
+    "macaddr.5.6.2"
+    "https://github.com/mirage/ocaml-ipaddr/releases/download/v5.6.2/ipaddr-5.6.2.tbz"
+  ]
+  [
+    "macaddr-cstruct.5.6.2"
+    "https://github.com/mirage/ocaml-ipaddr/releases/download/v5.6.2/ipaddr-5.6.2.tbz"
+  ]
+  [
+    "metrics.0.5.0"
+    "https://github.com/mirage/metrics/releases/download/v0.5.0/metrics-0.5.0.tbz"
+  ]
+  [
+    "mirage-bootvar.1.0.1"
+    "https://github.com/mirage/mirage-bootvar/releases/download/v1.0.1/mirage-bootvar-1.0.1.tbz"
+  ]
+  [
+    "mirage-crypto.2.1.0"
+    "https://github.com/mirage/mirage-crypto/releases/download/v2.1.0/mirage-crypto-2.1.0.tbz"
+  ]
+  [
+    "mirage-crypto-rng.2.1.0"
+    "https://github.com/mirage/mirage-crypto/releases/download/v2.1.0/mirage-crypto-2.1.0.tbz"
+  ]
+  [
+    "mirage-crypto-rng-mirage.2.1.0"
+    "https://github.com/mirage/mirage-crypto/releases/download/v2.1.0/mirage-crypto-2.1.0.tbz"
+  ]
+  [
+    "mirage-flow.5.0.0"
+    "https://github.com/mirage/mirage-flow/releases/download/v5.0.0/mirage-flow-5.0.0.tbz"
+  ]
+  [
+    "mirage-logs.3.0.0"
+    "https://github.com/mirage/mirage-logs/releases/download/v3.0.0/mirage-logs-3.0.0.tbz"
+  ]
+  [
+    "mirage-mtime.5.2.0"
+    "https://github.com/mirage/mirage-mtime/releases/download/v5.2.0/mirage-mtime-5.2.0.tbz"
+  ]
+  [
+    "mirage-net.4.0.0"
+    "https://github.com/mirage/mirage-net/releases/download/v4.0.0/mirage-net-v4.0.0.tbz"
+  ]
+  [
+    "mirage-net-unix.3.0.0"
+    "https://github.com/mirage/mirage-net-unix/releases/download/v3.0.0/mirage-net-unix-3.0.0.tbz"
+  ]
+  [
+    "mirage-ptime.5.2.0"
+    "https://github.com/mirage/mirage-ptime/releases/download/v5.2.0/mirage-ptime-5.2.0.tbz"
+  ]
+  [
+    "mirage-runtime.4.10.5"
+    "https://github.com/mirage/mirage/releases/download/v4.10.5/mirage-4.10.5.tbz"
+  ]
+  [
+    "mirage-sleep.4.1.0"
+    "https://github.com/mirage/mirage-sleep/releases/download/v4.1.0/mirage-sleep-4.1.0.tbz"
+  ]
+  [
+    "mirage-unix.5.0.1"
+    "https://github.com/mirage/mirage-unix/releases/download/v5.0.1/mirage-unix-5.0.1.tbz"
+  ]
+  [
+    "mtime.2.1.0+dune"
+    "https://github.com/dune-universe/mtime/releases/download/v2.1.0%2Bdune/mtime-2.1.0.dune.tbz"
+  ]
+  [
+    "ocplib-endian.1.2"
+    "https://github.com/OCamlPro/ocplib-endian/archive/refs/tags/1.2.tar.gz"
+  ]
+  [
+    "ohex.0.2.0"
+    "https://github.com/ocaml/opam-source-archives/raw/main/ohex-0.2.0.tar.gz"
+  ]
+  [
+    "psq.0.2.1"
+    "https://github.com/pqwy/psq/releases/download/v0.2.1/psq-0.2.1.tbz"
+  ]
+  [
+    "ptime.1.2.0+dune"
+    "https://github.com/dune-universe/ptime/releases/download/v1.2.0%2Bdune/ptime-1.2.0.dune.tbz"
+  ]
+  [
+    "randomconv.0.2.0"
+    "https://github.com/hannesm/randomconv/releases/download/v0.2.0/randomconv-0.2.0.tbz"
+  ]
+  ["seq.base+dune" "https://github.com/c-cube/seq/archive/0.2.2.tar.gz"]
+  [
+    "tcpip.9.0.1"
+    "https://github.com/mirage/mirage-tcpip/releases/download/v9.0.1/tcpip-9.0.1.tbz"
+  ]
+  [
+    "tuntap.2.0.1"
+    "https://github.com/mirage/ocaml-tuntap/releases/download/v2.0.1/tuntap-2.0.1.tbz"
+  ]
+]
+x-opam-monorepo-cli-args: [
+  "--require-cross-compile"
+  "--build-only"
+  "services-unix"
+  "-l"
+  "mirage/services-unix.opam.locked"
+  "--ocaml-version"
+  "5.4.1"
+]
+x-opam-monorepo-duniverse-dirs: [
+  [
+    "https://github.com/OCamlPro/ocplib-endian/archive/refs/tags/1.2.tar.gz"
+    "ocplib-endian"
+    [
+      "md5=8d5492eeb7c6815ade72a7415ea30949"
+      "sha512=2e70be5f3d6e377485c60664a0e235c3b9b24a8d6b6a03895d092c6e40d53810bfe1f292ee69e5181ce6daa8a582bfe3d59f3af889f417134f658812be5b8b85"
+    ]
+  ]
+  [
+    "https://github.com/c-cube/seq/archive/0.2.2.tar.gz"
+    "seq"
+    [
+      "md5=9033e02283aa3bde9f97f24e632902e3"
+      "sha512=cab0eb4cb6d9788b7cbd7acbefefc15689d706c97ff7f75dd97faf3c21e466af4d0ff110541a24729db587e7172b1a30a3c2967e17ec2e49cbd923360052c07c"
+    ]
+  ]
+  [
+    "https://github.com/dune-universe/cmdliner/releases/download/v2.1.0%2Bdune/cmdliner-2.1.0.dune.tbz"
+    "cmdliner"
+    [
+      "sha256=be77f99b12eae1ff71337b22f4f69efb70bf1e1a941c224b1490262d75a46203"
+      "sha512=2038ce043e3c778dfa19ef0f092659c6404093bccf78ad3c546535ceb3f5b85669a66f7cc39c42bc3fe85814ce4265b50e586194dff610ea26e0c942cce1286e"
+    ]
+  ]
+  [
+    "https://github.com/dune-universe/fmt/releases/download/v0.11.0%2Bdune/fmt-0.11.0.dune.tbz"
+    "fmt"
+    [
+      "sha256=1df182f0851793f2a250ac6d957d188eb5c37d658a7bfd29a6498bce022fec30"
+      "sha512=d1a91b65752977f2492abf39f43d121559d50da822e6c1f3b641240e203db45dca6b1e2bc6c4adbf39d59e81ad80d61963ac7ce17ac7ba8317e433967a99d00f"
+    ]
+  ]
+  [
+    "https://github.com/dune-universe/logs/releases/download/v0.10.0%2Bdune/logs-0.10.0.dune.tbz"
+    "logs"
+    [
+      "sha256=4b96a00c0f1f58972634d3f63e83c15de70cf5b6fbd2345b26059b20f093d97e"
+      "sha512=62d6c40317b0c33e566b0135b22c5ab2be3be0efd0163b1686a316795428e1c07378b46ef6d9f01c80d173f68d4b74a5a83766ff93f285cf2a95ddd644d7067d"
+    ]
+  ]
+  [
+    "https://github.com/dune-universe/mtime/releases/download/v2.1.0%2Bdune/mtime-2.1.0.dune.tbz"
+    "mtime"
+    [
+      "sha256=8bef7b726925a19857ad9b0be10c1914152f401e6792354678508389dcc0e27c"
+      "sha512=f825f04a2d2e228f12efa11443b8ab6ec2b961b173a29b042b1cce6267439f423b57bd83c6dbf7c0e3bee6460fced93b7146a62c7da0bd6e8a2bd008c81a70e1"
+    ]
+  ]
+  [
+    "https://github.com/dune-universe/ptime/releases/download/v1.2.0%2Bdune/ptime-1.2.0.dune.tbz"
+    "ptime"
+    [
+      "sha256=594296fccd06b94e09378356613b0dd3917218882b7d21cc0bb9c35c17b3c6ec"
+      "sha512=2cbe42776cb4f41908c5ec1dd8b7bb1dac9ad49713c4a8ffc24b2315f64e6c0ffd643a8934ee61cc3c91b568aa6e0f857a4f5da9a39f3f8bdaeba4dc909d251a"
+    ]
+  ]
+  [
+    "https://github.com/hannesm/domain-name/releases/download/v0.5.0/domain-name-0.5.0.tbz"
+    "domain-name"
+    [
+      "sha256=9ec7ae2c22772c150b84cfa3f21d9bf25fae14a796f31e20df52d86f46499d89"
+      "sha512=923acab434ebb197f44075711030fd1b7f61783e20cc6f74387ce0acf1bc5f48eb8a8a5e29d3440e7c249ab00673e250ddfdc7e53d71c5a1613f1dbb557c0ae1"
+    ]
+  ]
+  [
+    "https://github.com/hannesm/duration/releases/download/v0.3.0/duration-0.3.0.tbz"
+    "duration"
+    [
+      "sha256=62fd738fe1ee4825b3c70e7ac8cc859ed37bae147783daa583bb743bba052b75"
+      "sha512=543a152c6c26612cdaf52974ee7cb98c8931be73ae8002be6a152878af8e6031abacb771f37bd2acb6e3b29eec29d34fe8806f37ddf5211df582918379983290"
+    ]
+  ]
+  [
+    "https://github.com/hannesm/randomconv/releases/download/v0.2.0/randomconv-0.2.0.tbz"
+    "randomconv"
+    [
+      "sha256=b3171edf07e341a4468f92ffc21e2a8863b82ed5c36f7477cc98daf05d5b63ea"
+      "sha512=376c36da6b67ed1d817ea13fbbc3490f356f0890f9e009a55d12946c6811611ea9bd31aec733dd961de7209effa23649505f61d1ed3fc18af225ca4ec9131c38"
+    ]
+  ]
+  [
+    "https://github.com/kit-ty-kate/bytes/archive/v0.1.0.tar.gz"
+    "bytes"
+    [
+      "sha256=795b9bf545841714aaf0e517b62834a589937f65ad815ed4589ea56fa614d238"
+    ]
+  ]
+  [
+    "https://github.com/mirage/arp/releases/download/v4.1.0/arp-4.1.0.tbz"
+    "arp"
+    [
+      "sha256=02f8f1bde52049104d85942f0a9d686be25f117488ae89c40a4e27368b3c865d"
+      "sha512=9a602b22cc25becf8cc28248356931ffe4b37dc403881745ea73103165b0b8dab85007ab9e7bc024b59be92fc93165a996ca71a01d132aa79eb7c5b2a1839b90"
+    ]
+  ]
+  [
+    "https://github.com/mirage/charrua/releases/download/v3.1.1/charrua-3.1.1.tbz"
+    "charrua"
+    [
+      "sha256=8fcd4a51a10eeb600989585847fb373c2f5187bef8019455091eea3751a7f405"
+      "sha512=0629cd497d9f234821279ac58ce707ca303b36093f887af9cb462139f3bd21ae0e9a80dd9375f7d5ad22eca7517c7e9c77193c616871da5bd68b3e456550f1e4"
+    ]
+  ]
+  [
+    "https://github.com/mirage/cmdliner-stdlib/releases/download/1.0.1/cmdliner-stdlib-1.0.1.tbz"
+    "cmdliner-stdlib"
+    [
+      "sha256=19b5b963c21b6fe98d2f62e404e53611c3bcc7baf538efd01f598ef928257aae"
+      "sha512=bfb47467967e662e22163de0714642eb3a4cec05c85e0d76b0a5eebe75e2d3b1a3273432b58e1e4ab078026597182dd9d517832405bf00ef02d7751d0b3c9ece"
+    ]
+  ]
+  [
+    "https://github.com/mirage/digestif/releases/download/v1.3.0/digestif-1.3.0.tbz"
+    "digestif"
+    [
+      "sha256=9a6cdcb332539c87f4723fc3bd73626b2675a7b1161fdf0fed309186ce18f427"
+      "sha512=986d98eeb79f75ff69842a7ed4b93b4ff3795df7c09d455ca0c41408d67415a6743253a96c7e0de653dc62db95cb1fd29b1c654472fa11259cddde65dd5dd352"
+    ]
+  ]
+  [
+    "https://github.com/mirage/eqaf/releases/download/v0.10/eqaf-0.10.tbz"
+    "eqaf"
+    [
+      "sha256=67d1369c57c4d2d14a10d02632d45e355224abeb98aec08979c0bae5843092ee"
+      "sha512=7f75b5d5667e3605f8d95e2d6fda40953129033e6a342ee2c98ee4135c2428e1db87547971868605ab989374757c47c21c5397d4c3da578952d716826a156979"
+    ]
+  ]
+  [
+    "https://github.com/mirage/ethernet/releases/download/v3.2.0/ethernet-3.2.0.tbz"
+    "ethernet"
+    [
+      "sha256=4c1da70214221d9d4393a9ffde2e3db3d1ca347f76c8d525df197de21072ac09"
+      "sha512=33bc592ca642b7b4cefbdb473ce21da80a4517d2ecf7b40614a19f5edaf309f5cae3f30b5e069ee3bb363ad778d72920c448679f086a2a1813b1db1b0cd8ddc3"
+    ]
+  ]
+  [
+    "https://github.com/mirage/lwt-dllist/releases/download/v1.1.0/lwt-dllist-1.1.0.tbz"
+    "lwt-dllist"
+    [
+      "sha256=b0200651e37eaa24f027177bc01e266db43da48aa18146973d1d18336c325d69"
+      "sha512=0a34795203d1d6601285b631ac5016beece436ffe49eb2896fdf730913b66b0dc6192fdad6bd3d5cc3ad22a19627a9d6198189597ecd520af44b0b3db5e81f00"
+    ]
+  ]
+  [
+    "https://github.com/mirage/metrics/releases/download/v0.5.0/metrics-0.5.0.tbz"
+    "metrics"
+    [
+      "sha256=df356380909d06461bcd097ef6063ca9f3c51365f476a797c03664b53c05715d"
+      "sha512=06e0aef8ba7a09a350cbf7219822c01047afcc9cd2870ca153040e1232d2b8560882ae6823e7797f061fa0b34da750d88365c8817cd025715b2e891320d77c19"
+    ]
+  ]
+  [
+    "https://github.com/mirage/mirage-bootvar/releases/download/v1.0.1/mirage-bootvar-1.0.1.tbz"
+    "mirage-bootvar"
+    [
+      "sha256=12e5efb6dda76a9dc1ee363b9d831e9cea9a98b4d0aeec8527c2b6b5167806ad"
+      "sha512=306decf2278ca021c71934c9a99036d7b958698a3fe5b618fa7618e0b89d9e8ea901db0e2ff0ac31bf1a939a22105a9bf6240649b2e63ce6230e75dbf75c3449"
+    ]
+  ]
+  [
+    "https://github.com/mirage/mirage-crypto/releases/download/v2.1.0/mirage-crypto-2.1.0.tbz"
+    "mirage-crypto"
+    [
+      "sha256=fbeda89a3d7bfa9992fdbef3ebbfc7280fcefdd425a0405e33305125cd409815"
+      "sha512=0deace3ebc756ea02808bd0cb394012403bb949b2514637df1af8be50e6c3bd12dcc46742c5c0cbb6dd43234574291ecf27e4179da2ab9b6ec6520c5195e5803"
+    ]
+  ]
+  [
+    "https://github.com/mirage/mirage-flow/releases/download/v5.0.0/mirage-flow-5.0.0.tbz"
+    "mirage-flow"
+    [
+      "sha256=37ca79cae0ed9b270b87712edcb397a5dec4ab39357b28107e00daa6c8553323"
+      "sha512=3cf9ebd09ce6e29f9f99a00bf47d2962ccd0e6627b0cdb407538c491480102211bde863d342624cdd4bdb2e1b198b8bf5b2109f881e8113210468ad5b5aa8632"
+    ]
+  ]
+  [
+    "https://github.com/mirage/mirage-logs/releases/download/v3.0.0/mirage-logs-3.0.0.tbz"
+    "mirage-logs"
+    [
+      "sha256=a6db7dfc3afd87e5b78fff52007a56bca6672207ae067e68c63ef69318926750"
+      "sha512=dd97fcb18913e80cc7acd2a54968a9fe863dccae80dd42ad8e232924371c4e22c7dcbdbc92c33107ebfa12ba1d83caefb08a4ccfff49e082b0b25c94d58adb8d"
+    ]
+  ]
+  [
+    "https://github.com/mirage/mirage-mtime/releases/download/v5.2.0/mirage-mtime-5.2.0.tbz"
+    "mirage-mtime"
+    [
+      "sha256=91a04352a405d5215e724bbce624675fd8e2d7c4e36d3225cf806546e44089bf"
+      "sha512=5ffc9570c2d939d3deee1ca0b12ba49c9332ec141bf847edd7c4c8fbe274bf1f4a4ac5b74a7acdb30d1cbf81783bd71b66e83cfa7af1a7e80a1406edafcec110"
+    ]
+  ]
+  [
+    "https://github.com/mirage/mirage-net-unix/releases/download/v3.0.0/mirage-net-unix-3.0.0.tbz"
+    "mirage-net-unix"
+    [
+      "sha256=87a9ea89634d24707952c5bfa1bda1be17e030377c90dca4ed0feadee55293cc"
+      "sha512=f42039d4937e07db8a2b267b2c46ceeaeee6b621eafe1641759efa7697d07924ac833082711420aac8f3b8e7959a0093d17881b0ff3d60a3a691c2304cea6868"
+    ]
+  ]
+  [
+    "https://github.com/mirage/mirage-net/releases/download/v4.0.0/mirage-net-v4.0.0.tbz"
+    "mirage-net"
+    [
+      "sha256=668effd187b81a0ab32450870c15dbb89ff911397ff338a8951807e250e194ce"
+      "sha512=52064dc704ebd0d305fd234b6d89fc313d5a80016d8875ef93212a1962ad8b1f332f7b0338244afbb2d2f207a28d476e7d7639be9dc607d95145afee7fccc483"
+    ]
+  ]
+  [
+    "https://github.com/mirage/mirage-ptime/releases/download/v5.2.0/mirage-ptime-5.2.0.tbz"
+    "mirage-ptime"
+    [
+      "sha256=60e5a926b7d0286f64842c0f6f99595ed7fe7e2a783740750009f663dcd12f28"
+      "sha512=c8f6ba732bf103fa6509708f58e4f7fe3b317d3c35d62662df2454a04cc3278f036eee125a4a6d12f4cd24d3c6aaf49bb46f3fc5a76bff5c6282c915de0a631f"
+    ]
+  ]
+  [
+    "https://github.com/mirage/mirage-sleep/releases/download/v4.1.0/mirage-sleep-4.1.0.tbz"
+    "mirage-sleep"
+    [
+      "sha256=0a81e5e0b8066c00ed0ef59bdead2ef1a321da31d3f46bede3bbe4d0fce9d9bb"
+      "sha512=30b163bb6bf12d6e14463a286d1eafdc983ef7c687628147b0c42eea042ac490465934cd1bfd7ef6814a8bbcc9cacc9d536c858c2604d3d2ac0ed3fcf97c734d"
+    ]
+  ]
+  [
+    "https://github.com/mirage/mirage-tcpip/releases/download/v9.0.1/tcpip-9.0.1.tbz"
+    "mirage-tcpip"
+    [
+      "sha256=fac07ce986811cf5e3d71373d92b631cc30fbef548d6da21b0917212dcf90b03"
+      "sha512=01de13f560d58b1524c39619e4e4cb6ebbf069155eb43d0f264aa12b00e0cc8c39792719e3ca46585dd596b692b8e1e3f8c132f005ed9e2d77747c0c158bf4d9"
+    ]
+  ]
+  [
+    "https://github.com/mirage/mirage-unix/releases/download/v5.0.1/mirage-unix-5.0.1.tbz"
+    "mirage-unix"
+    [
+      "sha256=535a0bce750305c24b715ca07d28b2979a912c3336edc9bf5ab8d3d2f48684f8"
+      "sha512=bd6dafe5276ebcd33bbdf37ff51b70d39989055d595184d4c8f34e6ebac3a843da3aac730ed0ef630522cdb2e43b89e008531db0a83adbe37c7c44606436c4ad"
+    ]
+  ]
+  [
+    "https://github.com/mirage/mirage/releases/download/v4.10.5/mirage-4.10.5.tbz"
+    "mirage"
+    [
+      "sha256=c0b2deb8f9cfec44f9dbc256a18b50944f2aa8fcba84aef3165abebd23476e0c"
+      "sha512=e354f1cb4d12b424c22b9add0851a8750fe09f095ca97f0ec0360b18f7c69db60b155fdd18b0d7a6cea3432e63f20e4695a5bccaac3fc34588348e4311baa1c5"
+    ]
+  ]
+  [
+    "https://github.com/mirage/ocaml-cstruct/releases/download/v6.2.0/cstruct-6.2.0.tbz"
+    "ocaml-cstruct"
+    [
+      "sha256=9a78073392580e8349148fa3ab4b1b2e989dc9d30d07401b04c96b7c60f03e62"
+      "sha512=8d33fe6b3707a3994d0225cd33cadde0bb2ca834ef01096e3df33a08e4a8c6d02ebccddf558a73988b8a5595b65fdc10de61efbf872c6c9e55c719c7e19c463d"
+    ]
+  ]
+  [
+    "https://github.com/mirage/ocaml-ipaddr/releases/download/v5.6.2/ipaddr-5.6.2.tbz"
+    "ocaml-ipaddr"
+    [
+      "sha256=08a3fa6e6411490b6661e5b10229ea9ec6b8c3738e9f6b255859b13f145be136"
+      "sha512=719f32fd5a5c854ff5af2c668d20f9c4de4659a3d7d03d260e537ab402d9dd85a5350e611bfc3b8df10f6be02b5941d55a96cd2b4dccc0ad2710c95a51373bd8"
+    ]
+  ]
+  [
+    "https://github.com/mirage/ocaml-tuntap/releases/download/v2.0.1/tuntap-2.0.1.tbz"
+    "ocaml-tuntap"
+    [
+      "sha256=27c60197cc3bc459680eab7f5e2cf4dca08896ce4147bd954fc5ff2d864c0cdd"
+      "sha512=7311438c0b4c79da932c54452c977257bca5bcd0a963567521fde6717f358624b3a42ff094bc4278c103cc839a3896c9d6a9967733cc5366faac1663fb17e801"
+    ]
+  ]
+  [
+    "https://github.com/ocaml-community/cppo/archive/v1.8.0.tar.gz"
+    "cppo"
+    [
+      "md5=a197cb393b84f6b30e0ff55080ac429b"
+      "sha512=3840725b767a0300bdc48f11d26d798bdcae0a764ed6798df3a08dfc8cc76fe124b14a19d47c9b5ea8e229d68b0311510afce77c0e4d9131fbda5116dc2689a2"
+    ]
+  ]
+  [
+    "https://github.com/ocaml-dune/csexp/releases/download/1.5.2/csexp-1.5.2.tbz"
+    "csexp"
+    [
+      "sha256=1a14dd04bb4379a41990248550628c77913a9c07f3c35c1370b6960e697787ff"
+      "sha512=be281018bcfc20d4db14894ef51c4b836d6338d2fdfe22e63d46f405f8dea7349e16f1c0ecd65f73d4c85a2a80e618cdbb8c9dafcbb9f229f04f1adca5b1973c"
+    ]
+  ]
+  [
+    "https://github.com/ocaml/dune/releases/download/3.22.2/dune-3.22.2.tbz"
+    "dune_"
+    [
+      "sha256=c2ccf8bc6b17afa47c450297357496303aa7c8680e329b79d98c68e35013a118"
+      "sha512=26d3df56a509c6e8937a9333944303bdd8800a41e1b869c3adfb76d1e1fe615b6ec41491d596bd5982e338dcf70b97c18f963f37bfbf2bd581cbd356f3d5f4e5"
+    ]
+  ]
+  [
+    "https://github.com/ocaml/opam-source-archives/raw/main/ohex-0.2.0.tar.gz"
+    "ohex"
+    [
+      "md5=77f2cbe75b9efd528a2b3478a8d4f3d4"
+      "sha512=af72a9699f81878cc7d247a92a28332a8e34f247ad6bd477f8c7ae7f2970b73c4750a31eedf8eeb43ca8d19ae3c4c4f8a9d5421a40b73eb1f1711f44b14ff3e6"
+    ]
+  ]
+  [
+    "https://github.com/ocsigen/lwt/archive/refs/tags/6.1.1.tar.gz"
+    "lwt"
+    [
+      "md5=9bccdb35c84cb8097233b3a875f08826"
+      "sha512=3c92e3359ee742b9647dc8392b71c2d725b23549327aaab772d48d016d7abb8f0d710d0e9bdc0fd2406e0cbc4ea182cd134446fe4356538795d173cc6a9e0a27"
+    ]
+  ]
+  [
+    "https://github.com/pqwy/lru/releases/download/v0.3.1/lru-0.3.1.tbz"
+    "lru"
+    [
+      "sha256=6cbe23d27a7d5b244f869c0b88140d47f70f413a6462ef35c0009325d4b236fd"
+      "sha512=81144e258d6e488d4677ade91132401b6f8871c72aadf2f1c190c4dee918c71c5df10c4e690c5bf1ab0f364d87989d44aec3695310a3477f6473eb17c1261734"
+    ]
+  ]
+  [
+    "https://github.com/pqwy/psq/releases/download/v0.2.1/psq-0.2.1.tbz"
+    "psq"
+    [
+      "sha256=42005f533eabe74b1799ee32b8905654cd66a22bed4af2bd266b28d8462cd344"
+      "sha512=8a8dfe20dc77e1cf38a7b1a7fc76f815c71a4ffe04627151b855feaba8f1ae742594739d1b7a45580b5b24a2cd99b58516f6b5c8d858aa314201f4a6422101ee"
+    ]
+  ]
+]
+x-opam-monorepo-opam-provided: ["mirage" "opam-monorepo"]
+x-opam-monorepo-root-packages: ["services-unix"]
+x-opam-monorepo-version: "0.3"
