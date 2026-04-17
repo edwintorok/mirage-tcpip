@@ -361,7 +361,8 @@ struct
     (* The window handling thread *)
     let tx_wnd_update = Lwt_mvar.create_empty () in
     (* Set up transmit and receive queues *)
-    let on_close () = clearpcb t id tx_isn in
+    let tx_close = ref ignore in
+    let on_close () = clearpcb t id tx_isn; User_buffer.Rx.drop urx; !tx_close () in
     let state =
       incr pcb_id;
       State.t ~id:!pcb_id ~on_close
@@ -373,6 +374,7 @@ struct
     let ack = ACK.t ~send_ack ~last:(Sequence.succ rx_isn) in
     (* The user application transmit buffer *)
     let utx = UTX.create ~wnd ~txq ~max_size:16384l in
+    tx_close := (fun () -> UTX.drop utx);
     let rxq = RXS.create ~rx_data ~ack ~wnd ~state ~tx_ack in
     (* Set up the keepalive state if requested *)
     let keepalive = match keepalive with

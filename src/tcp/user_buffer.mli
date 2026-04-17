@@ -25,6 +25,7 @@ module Rx : sig
   val cur_size : t -> int32
   val max_size : t -> int32
   val monitor: t -> int32 Lwt_mvar.t -> unit
+  val drop: t -> unit
 end
 
 module Tx : sig
@@ -45,4 +46,5 @@ module Tx : sig
   val write_nodelay: t -> Cstruct.t list -> unit Lwt.t
   val free: t -> int -> unit Lwt.t
   val reset: t -> unit Lwt.t
+  val drop: t -> unit
 end
