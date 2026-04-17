@@ -67,6 +67,10 @@ module Rx = struct
     Lwt_dllist.clear t.q;
     t.cur_size <- 0l
 
+  let drop t =
+    remove_all t;
+    t.watcher <- None
+
   let add_r t s =
     if t.cur_size > t.max_size then
       let th,u = Lwt.wait () in
@@ -321,5 +325,9 @@ module Tx = struct
     Lwt_dllist.clear t.buffer;
     t.bufbytes <- 0l;
     inform_app t
+
+  let drop t =
+    Lwt_dllist.clear t.buffer;
+    t.bufbytes <- 0l
 
 end
