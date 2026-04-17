@@ -60,11 +60,7 @@ module Rx = struct
     | Some b -> Cstruct.length b
 
   let remove_all t =
-    let rec rm = function
-      | 0 -> ()
-      | n -> ignore (Lwt_dllist.take_l t.q); rm (pred n)
-    in
-    rm (Lwt_dllist.length t.q)
+    Lwt_dllist.clear t.q
 
   let add_r t s =
     if t.cur_size > t.max_size then
@@ -317,13 +313,7 @@ module Tx = struct
     inform_app t
 
   let reset t =
-    (* FIXME: duplicated code with Segment.reset_seq *)
-    let rec reset_seq segs =
-      match Lwt_dllist.take_opt_l segs with
-      | None   -> ()
-      | Some _ -> reset_seq segs
-    in
-    reset_seq t.buffer;
+    Lwt_dllist.clear t.buffer;
     inform_app t
 
 end
