@@ -68,6 +68,8 @@ module Make (N : Mirage_net.S)
     let now = Mirage_mtime.elapsed_ns () in
     (* TODO fragmentation! *)
     let payload = Cstruct.concat bufs in
+    if List.length bufs > 1 then
+      Mirage_net.Mem.track payload;
     let size' = size + Cstruct.length payload in
     let fillf _ip6hdr buf =
       let h_len = headerf buf in

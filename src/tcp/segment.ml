@@ -19,6 +19,8 @@ open Lwt.Infix
 let src = Logs.Src.create "tcp.segment" ~doc:"Mirage TCP Segment module"
 module Log = (val Logs.src_log src : Logs.LOG)
 
+module Lwt_dllist = Tcpip.Memory.Lwt_dllist
+
 let lwt_sequence_add_l s seq =
   let (_:'a Lwt_dllist.node) = Lwt_dllist.add_l s seq in
   ()
@@ -41,10 +43,7 @@ let peek_l seq =
     let _ = Lwt_dllist.add_l s seq in
     s
 
-let rec reset_seq segs =
-  match Lwt_dllist.take_opt_l segs with
-  | None -> ()
-  | Some _ -> reset_seq segs
+let reset_seq = Lwt_dllist.clear
 
 (* The receive queue stores out-of-order segments, and can
    coalesece them on input and pass on an ordered list up the
@@ -59,6 +58,8 @@ module Rx(ACK: Ack.M) = struct
   (* Individual received TCP segment
      TODO: this will change when IP fragments work *)
   type segment = { header: Tcp_packet.t; payload: Cstruct.t }
+
+  let size_of_segment t = Cstruct.length t.payload
 
   let pp_segment fmt {header; payload} =
     Format.fprintf fmt
@@ -105,6 +106,9 @@ module Rx(ACK: Ack.M) = struct
     with Not_found -> false
 
   let is_empty q = S.is_empty q.segs
+
+  let set_segs q segs =
+    q.segs <- Tcpip.Memory.update_set (module S) size_of_segment ~old:q.segs segs
 
   let check_valid_segment q seg =
     if seg.header.rst then
@@ -166,7 +170,7 @@ module Rx(ACK: Ack.M) = struct
             ready, (S.add seg waiting)
           | _ -> assert false
         ) segs (S.empty, S.empty) in
-      q.segs <- waiting;
+      set_segs q waiting;
       (* If the segment has an ACK, tell the transmit side *)
       let tx_ack =
         if seg.header.ack && (Sequence.geq seg.header.ack_number (Window.ack_seq q.wnd)) then begin
@@ -212,7 +216,7 @@ module Rx(ACK: Ack.M) = struct
     | `Reset ->
       State.tick q.state State.Recv_rst;
       (* Abandon our current segments *)
-      q.segs <- S.empty;
+      set_segs q S.empty;
       (* Signal TX side *)
       let txalert ack_svcd =
         if not ack_svcd then Lwt.return_unit
@@ -245,6 +249,8 @@ module Tx = struct
     flags: tx_flags;
     seq: Sequence.t;
   }
+
+  let size_of_seg t = Cstruct.length t.data
 
   (* Sequence length of the segment *)
   let len seg =
@@ -404,7 +410,7 @@ module Tx = struct
     tx_ack_t ()
 
   let create ~xmit ~wnd ~state ~rx_ack ~tx_ack ~tx_wnd_update =
-    let segs = Lwt_dllist.create () in
+    let segs = Lwt_dllist.create size_of_seg in
     let dup_acks = 0 in
     let expire = ontimer xmit state segs wnd in
     let period_ns = Window.rto wnd in

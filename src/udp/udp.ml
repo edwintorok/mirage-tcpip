@@ -68,7 +68,10 @@ module Make (Ip : Tcpip.Ip.S) = struct
         Ip.pseudoheader t.ip ?src dst `UDP (payload_size + Udp_wire.sizeof_udp)
       in
       let udp_header = Udp_packet.({ src_port; dst_port; }) in
-      match Udp_packet.Marshal.into_cstruct udp_header buf ~pseudoheader:ph ~payload:(Cstruct.concat bufs) with
+      let payload = Cstruct.concat bufs in
+      if List.length bufs > 1 then
+        Mirage_net.Mem.track payload;
+      match Udp_packet.Marshal.into_cstruct udp_header buf ~pseudoheader:ph ~payload with
       | Ok () -> 8
       | Error msg ->
         Logs.err (fun m -> m "error while assembling udp header: %s, ignoring" msg);

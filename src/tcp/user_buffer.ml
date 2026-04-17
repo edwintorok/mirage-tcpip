@@ -17,6 +17,8 @@
 
 open Lwt.Infix
 
+module Lwt_dllist = Tcpip.Memory.Lwt_dllist
+
 let lwt_sequence_add_l s seq =
   let (_:'a Lwt_dllist.node) = Lwt_dllist.add_l s seq in
   ()
@@ -39,10 +41,12 @@ module Rx = struct
     mutable cur_size: int32;
   }
 
+  let cstruct_opt_length t = Option.fold ~some:Cstruct.length t ~none:0
+
   let create ~max_size ~wnd =
-    let q = Lwt_dllist.create () in
-    let writers = Lwt_dllist.create () in
-    let readers = Lwt_dllist.create () in
+    let q = Lwt_dllist.create cstruct_opt_length in
+    let writers = Lwt_dllist.create Tcpip.Memory.size_of_lwt_u in
+    let readers = Lwt_dllist.create Tcpip.Memory.size_of_lwt_u in
     let watcher = None in
     let cur_size = 0l in
     { q; wnd; writers; readers; max_size; cur_size; watcher }
@@ -60,17 +64,14 @@ module Rx = struct
     | Some b -> Cstruct.length b
 
   let remove_all t =
-    let rec rm = function
-      | 0 -> ()
-      | n -> ignore (Lwt_dllist.take_l t.q); rm (pred n)
-    in
-    rm (Lwt_dllist.length t.q)
+    Lwt_dllist.clear t.q;
+    t.cur_size <- 0l
 
   let add_r t s =
     if t.cur_size > t.max_size then
       let th,u = Lwt.wait () in
       let node = Lwt_dllist.add_r u t.writers in
-      Lwt.on_cancel th (fun _ -> Lwt_dllist.remove node);
+      Lwt.on_cancel th (fun _ -> Lwt_dllist.remove t.writers node);
       (* Update size before blocking, which may push cur_size above max_size *)
       t.cur_size <- Int32.(add t.cur_size (of_int (seglen s)));
       notify_size_watcher t >>= fun () ->
@@ -89,7 +90,7 @@ module Rx = struct
     if Lwt_dllist.is_empty t.q then begin
       let th,u = Lwt.wait () in
       let node = Lwt_dllist.add_r u t.readers in
-      Lwt.on_cancel th (fun _ -> Lwt_dllist.remove node);
+      Lwt.on_cancel th (fun _ -> Lwt_dllist.remove t.readers node);
       th
     end else begin
       let s = Lwt_dllist.take_l t.q in
@@ -130,8 +131,8 @@ module Tx = struct
   }
 
   let create ~max_size ~wnd ~txq =
-    let buffer = Lwt_dllist.create () in
-    let writers = Lwt_dllist.create () in
+    let buffer = Lwt_dllist.create Cstruct.length in
+    let writers = Lwt_dllist.create Tcpip.Memory.size_of_lwt_u in
     let bufbytes = 0l in
     { wnd; writers; txq; buffer; max_size; bufbytes }
 
@@ -163,12 +164,16 @@ module Tx = struct
     else begin
       let th,u = Lwt.wait () in
       let node = Lwt_dllist.add_r u t.writers in
-      Lwt.on_cancel th (fun _ -> Lwt_dllist.remove node);
+      Lwt.on_cancel th (fun _ -> Lwt_dllist.remove t.writers node);
       th >>= fun () ->
       wait_for t sz
     end
 
-  let compactbufs bl = Cstruct.concat bl
+  let compactbufs bl =
+    let t = Cstruct.concat bl in
+    if List.length bl > 1 then
+      Mirage_net.Mem.track t;
+    t
 
   (* Wait until the user buffer is flushed *)
   let rec wait_for_flushed t =
@@ -178,7 +183,7 @@ module Tx = struct
     else begin
       let th,u = Lwt.wait () in
       let node = Lwt_dllist.add_r u t.writers in
-      Lwt.on_cancel th (fun _ -> Lwt_dllist.remove node);
+      Lwt.on_cancel th (fun _ -> Lwt_dllist.remove t.writers node);
       th >>= fun () ->
       wait_for_flushed t
     end
@@ -317,13 +322,8 @@ module Tx = struct
     inform_app t
 
   let reset t =
-    (* FIXME: duplicated code with Segment.reset_seq *)
-    let rec reset_seq segs =
-      match Lwt_dllist.take_opt_l segs with
-      | None   -> ()
-      | Some _ -> reset_seq segs
-    in
-    reset_seq t.buffer;
+    Lwt_dllist.clear t.buffer;
+    t.bufbytes <- 0l;
     inform_app t
 
 end
