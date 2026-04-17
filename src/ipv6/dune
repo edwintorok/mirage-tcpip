@@ -5,5 +5,5 @@
   (backend bisect_ppx))
  (libraries logs mirage-sleep mirage-net macaddr-cstruct tcpip.checksum
    mirage-mtime duration ipaddr cstruct tcpip randomconv
-   mirage-crypto-rng ethernet ipaddr-cstruct)
+   mirage-crypto-rng ethernet ipaddr-cstruct lru)
  (wrapped false))

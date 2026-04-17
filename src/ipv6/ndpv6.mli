@@ -27,9 +27,9 @@ type event =
 
 type context
 
-val local : handle_ra:bool -> now:time -> Macaddr.t ->
+val local : ?cache_size:int -> handle_ra:bool -> now:time -> Macaddr.t ->
   context * (Macaddr.t * int * (Cstruct.t -> int)) list
-(** [local ~handle_ra ~now mac] is a pair [ctx, outs] where [ctx] is a local IPv6 context
+(** [local ?cache_size ~handle_ra ~now mac] is a pair [ctx, outs] where [ctx] is a local IPv6 context
     associated to the hardware address [mac].  [outs] is a list of ethif packets
     to be sent. *)
 
