@@ -1,0 +1,5 @@
+(library
+  (name memstress)
+  ; no dependencies other than cstruct: easier to test on multiple compilers
+  (libraries cstruct)
+)

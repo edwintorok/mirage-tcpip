@@ -1,5 +1,0 @@
-(library
-  (name memstress)
-  (modules_without_implementation interface)
-  (libraries cstruct)
-)
