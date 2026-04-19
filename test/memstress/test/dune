@@ -1,0 +1,10 @@
+; no dependencies, easier to test different compilers
+(test
+  (modes byte)
+  (name test_heaps)
+  (libraries memstress))
+
+(test
+  (name test)
+  (libraries memstress alcotest)
+)
