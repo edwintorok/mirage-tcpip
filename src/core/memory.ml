@@ -105,3 +105,20 @@ let update_set (type a b) (module S: Set.S with type elt = a and type t = b) siz
 
 let size_lwt_u = 9 * Sys.word_size
 let size_of_lwt_u (_ : _  Lwt.u) = size_lwt_u
+
+open Mirage_net
+
+let memory_pressure () =
+  Mem.(free_bytes heap <= 0)
+  || Mem.(free_bytes region <= 0)
+
+let collect () =
+  let collectable = max 512 Mem.(free_bytes heap - free_bytes region) in
+  let collectable = (collectable / Sys.(word_size / 8)) in
+  let (_ : int) = Gc.major_slice collectable in
+  collectable
+
+let should_drop ~addr_to_octets:_ ~src:_ ~dst:_ ~proto:_ ~ts:_ =
+  let open Mirage_net in
+  (* for now decide based just on memory pressure *)
+  Mem.(free_bytes region <= 0)

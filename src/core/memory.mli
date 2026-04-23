@@ -160,3 +160,18 @@ val update_set: (module Set.S with type elt = 'a and type t = 'b) -> ('a -> int)
 *)
 
 val size_of_lwt_u : _ Lwt.u -> int
+
+val memory_pressure: unit -> bool
+(** [memory_pressure ()] returns whether we should limit memory usage. *)
+
+val collect : unit -> int
+(** [collect ()] trigger a major GC slice based on the amount of unused packets.
+
+    @returns the argument used for {!val:Gc.major_slice}
+*)
+
+(** [should_drop ~addr_to_octets ~src ~dst ~proto ~ts] returns whether we should drop the given packet.
+
+    Memory pressure, or QoS can be used to decide.
+*)
+val should_drop: addr_to_octets:('a -> string) -> src:'a -> dst:'a -> proto:int -> ts:int64 -> bool
