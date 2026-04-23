@@ -999,7 +999,7 @@ module Parser = struct
     in
     loop (poff+2)
 
-  let packet is_my_addr buf =
+  let packet ~now is_my_addr buf =
     if Cstruct.length buf < Ipv6_wire.sizeof_ipv6 || Cstruct.length buf < Ipv6_wire.sizeof_ipv6 + Ipv6_wire.get_len buf then begin
       Log.debug (fun m -> m "short IPv6 packet received, dropping");
       Drop
@@ -1017,6 +1017,13 @@ module Parser = struct
       if not (is_my_addr dst || Ipaddr.Prefix.(mem dst multicast)) then begin
         Log.debug (fun f -> f "IP6: Dropping packet, not for me");
         Drop
+      end
+      else if Tcpip.Memory.should_drop
+          ~addr_to_octets:Ipaddr.to_octets
+          ~src ~dst ~proto:(Ipv6_wire.get_nhdr buf) ~ts:now then begin
+            Log.debug (fun m -> m "IP6: Dropping packet (memory): %a -> %a" Ipaddr.pp src Ipaddr.pp dst
+          );
+          Drop
       end
       else
         parse_extension ~src ~dst buf true (Ipv6_wire.get_nhdr buf) Ipv6_wire.sizeof_ipv6
@@ -1255,7 +1262,7 @@ let handle_na ~now ctx ~src ~dst na =
 
 let handle ~now ctx buf =
   let open Parser in
-  match packet (AddressList.is_my_addr ctx.address_list) buf with
+  match packet ~now (AddressList.is_my_addr ctx.address_list) buf with
   | RA (src, dst, ra) ->
     if ctx.handle_ra then
       let ctx, actions = handle_ra ~now ctx ~src ~dst ra in

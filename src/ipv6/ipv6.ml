@@ -96,6 +96,10 @@ module Make (N : Mirage_net.S)
     Lwt_list.fold_left_s fail_any (Ok ()) outs
 
   let input t ~tcp ~udp ~default buf =
+    if Tcpip.Memory.memory_pressure () then begin
+      let n = Tcpip.Memory.collect () in
+      Log.debug (fun m -> m "memory pressure: collect (%d) ran" n)
+    end;
     let now = Mirage_mtime.elapsed_ns () in
     let ctx, outs, actions = Ndpv6.handle ~now t.ctx buf in
     t.ctx <- ctx;

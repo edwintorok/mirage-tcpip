@@ -131,6 +131,10 @@ module Make (Ethernet: Ethernet.S) (Arpv4 : Arp.S) = struct
               (Ok ()) remaining
 
   let input t ~tcp ~udp ~default buf =
+    if Tcpip.Memory.memory_pressure () then begin
+      let n = Tcpip.Memory.collect () in
+      Log.debug (fun m -> m "memory pressure: collect (%d) ran" n)
+    end;
     match Ipv4_packet.Unmarshal.of_cstruct buf with
     | Error s ->
       Log.info (fun m -> m "error %s while parsing IPv4 frame %a" s Cstruct.hexdump_pp buf);
@@ -150,6 +154,12 @@ module Make (Ethernet: Ethernet.S) (Arpv4 : Arp.S) = struct
         Lwt.return_unit
       end else
         let ts = Mirage_mtime.elapsed_ns () in
+        if Tcpip.Memory.should_drop
+          ~addr_to_octets:Ipaddr.V4.to_octets
+          ~src:packet.src ~dst:packet.dst ~proto:packet.proto ~ts then begin
+          Log.debug (fun m -> m "dropping IPv4 packet (memory): %a" Ipv4_packet.pp packet) ;
+          Lwt.return_unit
+        end else 
         let cache, res = Fragments.process t.cache ts packet payload in
         t.cache <- cache ;
         match res with
