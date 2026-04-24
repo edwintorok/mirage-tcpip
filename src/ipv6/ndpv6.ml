@@ -949,13 +949,16 @@ module Parser = struct
     | 58 (* ICMP *) ->
       parse_icmp ~src ~dst buf poff
     | 17 (* UDP *) ->
+      (* TODO: track size here too *)
       Udp (src, dst, Cstruct.shift buf poff)
     | 6 (* TCP *) ->
+      (* TODO: track size here too *)
       Tcp (src, dst, Cstruct.shift buf poff)
     | n when 143 <= n && n <= 255 ->
       (* UNASSIGNED, EXPERIMENTAL & RESERVED *)
       Drop
     | n ->
+      (* TODO: track size here too *)
       Default (n, src, dst, Cstruct.shift buf poff)
 
   and parse_options ~src ~dst buf poff =

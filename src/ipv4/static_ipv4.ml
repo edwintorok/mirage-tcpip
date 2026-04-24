@@ -19,6 +19,8 @@ open Lwt.Infix
 let src = Logs.Src.create "ipv4" ~doc:"Mirage IPv4"
 module Log = (val Logs.src_log src : Logs.LOG)
 
+module PacketQueue = Mirage_net.PacketQueue
+
 module Make (Ethernet: Ethernet.S) (Arpv4 : Arp.S) = struct
   module Routing = Routing.Make(Log)(Arpv4)
 
@@ -43,10 +45,24 @@ module Make (Ethernet: Ethernet.S) (Arpv4 : Arp.S) = struct
     cidr: Ipaddr.V4.Prefix.t;
     gateway: Ipaddr.V4.t option;
     mutable cache: Fragments.Cache.t;
+    input: PacketQueue.(input t);
+    output: PacketQueue.(output t);
+    promise: PacketQueue.(promise t);
   }
 
   let write t ?(fragment = true) ?(ttl = 38) ?src dst proto ?(size = 0) headerf bufs =
-    Routing.destination_mac t.cidr t.gateway t.arp dst >>= function
+    let route =
+      Routing.destination_mac t.cidr t.gateway t.arp dst
+      |> PacketQueue.on_promise ~size_in_bytes:(Cstruct.lenv bufs) t.promise
+    in
+    if Lwt.is_sleeping route && PacketQueue.get_free_bytes t.promise <= 0 then begin
+      (* if there are too many packets waiting for address resolution we have to drop,
+         they could be queued up waiting for a non-existent or slow to respond IP
+       *)
+      Log.warn (fun f -> f "Could not find %a on the local network (dropping)" Ipaddr.V4.pp dst);
+      Lwt.return @@ Error (`No_route "no response for IP on local network")
+    end else
+    route >>= function
     | Error `Local ->
       Log.warn (fun f -> f "Could not find %a on the local network" Ipaddr.V4.pp dst);
       Lwt.return @@ Error (`No_route "no response for IP on local network")
@@ -108,6 +124,7 @@ module Make (Ethernet: Ethernet.S) (Arpv4 : Arp.S) = struct
             Cstruct.fillv ~src:bufs ~dst:(Cstruct.shift payload_buf header_len)
           in
           leftover := Cstruct.concat rest;
+          PacketQueue.on_output t.output !leftover;
           let payload_len = header_len + len in
           match Ipv4_packet.Marshal.into_cstruct ~payload_len hdr buf with
           | Ok () -> payload_len + hdr_len
@@ -136,6 +153,7 @@ module Make (Ethernet: Ethernet.S) (Arpv4 : Arp.S) = struct
       Log.info (fun m -> m "error %s while parsing IPv4 frame %a" s Cstruct.hexdump_pp buf);
       Lwt.return_unit
     | Ok (packet, payload) ->
+      PacketQueue.on_input t.input payload;
       let of_interest ip =
         Ipaddr.V4.(compare ip (Prefix.address t.cidr) = 0
                    || compare ip broadcast = 0
@@ -168,7 +186,12 @@ module Make (Ethernet: Ethernet.S) (Arpv4 : Arp.S) = struct
      else
        Arpv4.set_ips arp [Ipaddr.V4.Prefix.address cidr]) >|= fun () ->
     let cache = Fragments.Cache.empty fragment_cache_size in
-    { ethif; arp; cidr; gateway; cache }
+    let size_in_bytes = Ethernet.mtu ethif + 14 in
+    let promise = PacketQueue.make_promise ()
+    and input = PacketQueue.make_input ~size_in_bytes ()
+    and output = PacketQueue.make_output ()
+    in
+    { ethif; arp; cidr; gateway; cache; promise; input; output }
 
   let disconnect _ = Lwt.return_unit
 
