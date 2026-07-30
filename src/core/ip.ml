@@ -63,19 +63,19 @@ module Memory = struct
   let buckets = Array.init bucket_count (fun _ -> Atomic.make 0)
   let buckets_sum = Atomic.make 0
 
-  let[@inline] atomic_incr a delta =
-    let (_ : int) = Atomic.fetch_and_add a delta in ()
+  let[@inline] atomic_incr a =
+    let (_ : int) = Atomic.fetch_and_add a 1 in ()
 
-  let[@inline] atomic_decr a delta =
-    let (_ : int) = Atomic.fetch_and_add a (-delta) in ()
+  let[@inline] atomic_decr a =
+    let (_ : int) = Atomic.fetch_and_add a (-1) in ()
 
-  let buckets_incr bucket size =
-    atomic_incr bucket size;
-    atomic_incr buckets_sum size
+  let buckets_incr bucket =
+    atomic_incr bucket;
+    atomic_incr buckets_sum
 
-  let buckets_decr bucket size () =
-    atomic_decr bucket size;
-    atomic_decr buckets_sum size
+  let buckets_decr bucket () =
+    atomic_decr bucket;
+    atomic_decr buckets_sum
 
   let total_memory = Atomic.make Int.max_int
 
