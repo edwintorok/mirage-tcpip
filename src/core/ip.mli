@@ -96,3 +96,22 @@ module type S = sig
   (** [mtu ~dst ip] is the Maximum Transmission Unit of the [ip] i.e. the
       maximum size of the payload, not including the IP header. *)
 end
+
+module Memory: sig
+    type ('a, 'b) flow_fn = src:'a -> src_port:int -> dst:'a -> dst_port:int -> 'b
+
+    val available: ('a, int) flow_fn
+    (** [available ~src ~src_port ~dst ~dst_port] returns the amount of memory available
+        for a flow between [src, src_port] and [dst, dst_port].
+
+        This should be re-evaluated for every received packet, and
+        no assumptions should be made about the returned value.
+        E.g. it can reduce to zero for the same flow when we are low on memory,
+        while it remains positive for other flows, and can also be negative.
+        The returned value should be used to limit the TCP receive buffer/window size.
+    *)
+
+    val track: ('a, Cstruct.t -> Cstruct.t) flow_fn
+    (** [track ~src ~src_port ~dst ~dst_port packet] updates {!val:available_memory}
+        based on the size of [packet]. *)
+end
