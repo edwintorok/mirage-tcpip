@@ -1,11 +1,9 @@
 (* OCaml {!val:Hashtbl.hash} values are always 30 bits,
-   we use 3 hash functions, 
-   for a total of 15 levels, with 2^6 bins each
+   we split into 5 levels, with 2^6 bins each.
 
-   Maybe lets not complicate it and use just 1 hash function
+   If more than 1 hash function is needed then multiple
+   Counting bloom filters can be created and chained.
  *)
-
-type 'a t = private {mutable x: int[@atomic]}
 
 (*
   (* [int Atomic.t] produces inefficient code,
@@ -42,68 +40,79 @@ end
 module Level = struct
   type t = int array
 
-  let n = 1 lsl 6
+  let bits = 6
+
+  let n = 1 lsl bits
 
   let mask = n - 1 (* assumes n is a power of 2 *)
 
   let init _ = Array.make n 0
 
-  let[@inline] get i (t : t)=
+  let[@inline] get (t: t) i =
     (* no bounds check, the [mask] ensures that we are always within bounds,
        even when [i] would not be *)
     Array.unsafe_get t (i land mask)
 
-  let[@inline] update t i delta =
+  let[@inline] update (t: t) i delta =
     let i = i land mask in
     Array.unsafe_set t i (Array.unsafe_get t i + delta)
+
+  let[@inline] clear t =
+    Array.fill t 0 (Array.length t - 1) 0
+
+  let[@inline] of_hash ~hash level =
+    (* mask will be applied by {!val:get} and {!val:update} *)
+    hash lsr (bits * level)
 end
 
-module Levels = struct
-  type t = Level.t array
+type t = Level.t array
 
-  let n = 1 lsl 4
-  let mask = n - 1 (* assumes n is a power of 2 *)
+let levels = 5
+let hash_bits = 30
 
-  (* we waste one level to avoid a bounds check *)
+let () = assert (levels * Level.bits = hash_bits)
 
-  let make () = Array.init n Level.init
+let make () = Array.init levels Level.init
 
-  let[@inline] get t level bin =
-    Level.get bin (Array.unsafe_get t (level land mask))
+let[@inline] get (t : t) level =
+  assert (level >= 0 && level < levels);
+  Array.unsafe_get t level
 
-  let[@inline] fold_min t level hash offset acc =
-    get t (level + offset) (hash lsr (6*offset))
-    |> Int.min acc
+let[@inline] get_bin t ~hash level =
+  let bin = Level.of_hash ~hash level in
+  Level.get (get t level) bin
 
-  let[@inline] fold_min level hash t acc =
-    acc
-    |> fold_min t level hash 0
-    |> fold_min t level hash 1
-    |> fold_min t level hash 2
-    |> fold_min t level hash 3
-    |> fold_min t level hash 4
+let[@inline] fold_min t ~hash ~acc =
+  (* to determine the minimum we always need to read them all *)
+  let v0 = get_bin t ~hash 0
+  and v1 = get_bin t ~hash 1
+  and v2 = get_bin t ~hash 2
+  and v3 = get_bin t ~hash 3
+  and v4 = get_bin t ~hash 4 in
+  (* compare as a tree to minimize dependencies *)
+  let va0 = Int.min acc v0
+  and v12 = Int.min v1 v2
+  and v34 = Int.min v3 v4 in
+  let v1234 = Int.min v12 v34 in
+  Int.min va0 v1234
 
-  let[@inline] fold_min h1 h2 h3 t =
-    Int.max_int
-    |> fold_min 0 h1 t
-    |> fold_min 5 h2 t
-    |> fold_min 10 h3 t
+let[@inline] update_bin t ~hash ~delta level =
+  let bin = Level.of_hash ~hash level in
+  Level.update (get t level) bin delta
 
-  let[@inline] update t level hash offset delta=
-    let level = level + offset
-    and bin = hash lsr (6*offset) in
-    Level.update (Array.unsafe_get t (level land mask)) bin delta
+let[@inline] update t ~hash delta =
+  update_bin t ~hash ~delta 0; 
+  update_bin t ~hash ~delta 1;
+  update_bin t ~hash ~delta 2;
+  update_bin t ~hash ~delta 3;
+  update_bin t ~hash ~delta 4
 
-  let[@inline] update t level hash delta =
-    update t level hash 0 delta;
-    update t level hash 1 delta;
-    update t level hash 2 delta;
-    update t level hash 3 delta;
-    update t level hash 4 delta
+let[@inline] clear_bin t level =
+  Level.clear (get t level)
 
-  let[@poll error] update h1 h2 h3 delta t =
-    update t 0 h1 delta;
-    update t 5 h2 delta;
-    update t 10 h3 delta
-end
-
+let clear t =
+  clear_bin t 0;
+  clear_bin t 1;
+  clear_bin t 2;
+  clear_bin t 3;
+  clear_bin t 4
