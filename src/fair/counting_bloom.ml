@@ -1,10 +1,3 @@
-(* OCaml {!val:Hashtbl.hash} values are always 30 bits,
-   we split into 5 levels, with 2^6 bins each.
-
-   If more than 1 hash function is needed then multiple
-   Counting bloom filters can be created and chained.
- *)
-
 (*
   (* [int Atomic.t] produces inefficient code,
      with polling points where none are needed.
@@ -40,7 +33,28 @@ end
 module Level = struct
   type t = int array
 
+  (** OCaml {!val:Hashtbl.hash} values are always 30 bits,
+    we split into 5 levels, with [2**6] bins each.
+
+    If more than 1 hash function is needed then multiple
+    Counting bloom filters can be created and chained.
+
+    Choices here would be:
+      1 * 2**30 words = 8 GiB (too much)
+      2 * 2**15 words = 512 KiB (too much)
+
+      3 * 2**10 words = 24 KiB
+      5 * 2**6  words = 2.5 KiB
+
+      6 * 2**5  words = 1.5 KiB
+     10 * 2**3  words = 640
+     15 * 2**2  words = 480
+     30 * 2**1  words = 480
+  *)
   let bits = 6
+  let hash_bits = 30
+  let levels = hash_bits / bits
+  let () = assert (levels * bits = hash_bits)
 
   let n = 1 lsl bits
 
@@ -67,15 +81,11 @@ end
 
 type t = Level.t array
 
-let levels = 5
-let hash_bits = 30
 
-let () = assert (levels * Level.bits = hash_bits)
-
-let make () = Array.init levels Level.init
+let make () = Array.init Level.levels Level.init
 
 let[@inline] get (t : t) level =
-  assert (level >= 0 && level < levels);
+  assert (level >= 0 && level < Level.levels);
   Array.unsafe_get t level
 
 let[@inline] get_bin t ~hash level =
