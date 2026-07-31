@@ -1,0 +1,6 @@
+(library
+ (name tcpip_fair)
+ (public_name tcpip.fair)
+ (instrumentation
+  (backend bisect_ppx))
+ (libraries cstruct ipaddr))
