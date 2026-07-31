@@ -75,7 +75,35 @@ let test_uniform () =
   Array.iter (fun t -> assert (avg - t.Stats.Level.min_nonzero < avg / 100)) t;
   Array.iter (fun t -> assert (t.Stats.Level.max - avg < avg/100)) t
 
+let test_first_fp () =
+  let t = make () in
+  let rec loop prev_str i =
+    let hash = Hashtbl.hash (Random.bits ()) in
+    update t ~hash 1;
+    let count = (fold_min t ~hash ~acc:Int.max_int) in
+    let fp = ref 0 in
+    let str = ref prev_str in
+    if count > 1 then begin
+      incr fp;
+      for j = 0 to i-1 do
+          let hash = Hashtbl.hash j in
+          if (fold_min t ~hash ~acc:Int.max_int) > 1 then
+            incr fp
+      done;
+      let pct =  100. *. float_of_int !fp /. float_of_int i in
+      str := Format.sprintf "%.1f%%" pct;
+      if !str <> prev_str then
+        Format.printf "%d,%s@." i !str
+    end;
+    if i = 0 || !fp < i then
+      (loop[@tailcall]) !str (i+1)
+  in
+  loop "" 0;
+  Format.printf "%a@.d" Stats.pp (to_stats t)
+
+
 let () =
+  test_first_fp ();
   test_empty ();
   test_one ();
   test_full ();

@@ -96,7 +96,7 @@ let[@inline] get_bin t ~hash level =
   let bin = Level.of_hash ~hash level in
   Level.get (get t level) bin
 
-let[@inline] fold_min t ~hash ~acc =
+let[@inline] fold_min t ~hash acc =
   (* to determine the minimum we always need to read them all *)
   let v0 = get_bin t ~hash 0
   and v1 = get_bin t ~hash 1
